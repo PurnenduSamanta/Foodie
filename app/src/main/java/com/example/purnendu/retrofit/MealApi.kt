@@ -1,6 +1,6 @@
 package com.example.purnendu.retrofit
 
-import com.example.easyfood.data.pojo.CategoryList
+import com.example.purnendu.pojo.CategoryList
 import com.example.purnendu.pojo.MealsByCategoryList
 import com.example.purnendu.pojo.MealList
 import retrofit2.Call
@@ -15,8 +15,6 @@ interface MealApi {
     @GET("lookup.php?")
     fun getMealById(@Query("i") id:String):Call<MealList>
 
-    @GET("search.php?")
-    fun getMealByName(@Query("s") s:String):Call<MealList>
 
     @GET("categories.php")
     fun getCategories(): Call<CategoryList>

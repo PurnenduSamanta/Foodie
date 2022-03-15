@@ -27,13 +27,13 @@ class CategoryMealsActivity : AppCompatActivity() {
         viewModel.getMealsByCategoryName(intent.getStringExtra(HomeFragment.CATEGORY_NAME)!!)
 
 
-        adapter=CategoryMealsAdapter()
+        adapter=CategoryMealsAdapter(this)
         val layoutManager= GridLayoutManager(this,2,GridLayoutManager.VERTICAL,false)
         binding.mealRecyclerview.adapter=adapter
         binding.mealRecyclerview.layoutManager=layoutManager
 
 
-        viewModel.mealsLiveData.observe(this) {mealList->
+        viewModel.observeMealsLiveData().observe(this) {mealList->
             binding.tvCategoryCount.text=mealList.size.toString()
             adapter.setCategoryList(mealList)
         }

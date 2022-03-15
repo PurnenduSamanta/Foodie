@@ -8,25 +8,24 @@ import com.bumptech.glide.Glide
 import com.example.purnendu.databinding.CategoryItemBinding
 import com.example.purnendu.room.MealModel
 
-class FavouriteMealRecyclerAdapter : RecyclerView.Adapter<FavouriteMealRecyclerAdapter.MyViewHolder>() {
+class FavouriteMealRecyclerAdapter :
+    RecyclerView.Adapter<FavouriteMealRecyclerAdapter.MyViewHolder>() {
 
     private var mealList: List<MealModel> = ArrayList()
-    lateinit var  onItemSelected: ((MealModel)->Unit)
+    lateinit var onItemSelected: ((MealModel) -> Unit)
 
 
-    fun setCategoryList(mealList: List<MealModel>) {
+    fun setFavouriteList(mealList: List<MealModel>) {
         this.mealList = mealList
         notifyDataSetChanged()
     }
 
 
-    class MyViewHolder( val binding: CategoryItemBinding) : RecyclerView.ViewHolder(binding.root)
-    {
+    class MyViewHolder(val binding: CategoryItemBinding) : RecyclerView.ViewHolder(binding.root)
 
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        return FavouriteMealRecyclerAdapter.MyViewHolder(
+        return MyViewHolder(
             CategoryItemBinding.inflate(
                 LayoutInflater.from(
                     parent.context
@@ -37,7 +36,7 @@ class FavouriteMealRecyclerAdapter : RecyclerView.Adapter<FavouriteMealRecyclerA
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.binding.apply {
-            imgCategory.scaleType=ImageView.ScaleType.CENTER_CROP
+            imgCategory.scaleType = ImageView.ScaleType.CENTER_CROP
             tvCategoryName.text = mealList[position].mealName
             Glide.with(holder.itemView)
                 .load(mealList[position].mealThumb)
@@ -50,6 +49,6 @@ class FavouriteMealRecyclerAdapter : RecyclerView.Adapter<FavouriteMealRecyclerA
     }
 
     override fun getItemCount(): Int {
-       return  mealList.size
+        return mealList.size
     }
 }

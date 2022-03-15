@@ -12,7 +12,7 @@
         tools:context=".fragment.HomeFragment">
 
 
-        <androidx.core.widget.NestedScrollView
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true">
@@ -48,6 +48,7 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginEnd="20dp"
                         android:orientation="horizontal"
+                        android:weightSum="10"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
 
@@ -55,6 +56,7 @@
                             android:id="@+id/tv_home"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_weight="8"
                             android:fontFamily="@font/myfont"
                             android:text="Home"
                             android:textColor="@color/accent"
@@ -63,11 +65,10 @@
 
                         <ImageView
                             android:id="@+id/img_search"
-                            android:layout_width="40dp"
+                            android:layout_width="30dp"
                             android:layout_height="match_parent"
-                            android:layout_gravity="bottom|center"
-                            android:layout_marginStart="230dp"
-                            android:scaleType="centerCrop"
+                            android:layout_weight="2"
+                            android:scaleType="fitCenter"
                             android:src="@drawable/ic_search" />
                     </LinearLayout>
 
@@ -103,7 +104,6 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop" />
-                        <!--android:src="@drawable/mealtest" -->
 
                     </androidx.cardview.widget.CardView>
 
@@ -125,8 +125,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="120dp"
                         android:layout_marginStart="25dp"
-                        android:layout_marginEnd="10dp"
+                        android:layout_marginEnd="25dp"
                         android:orientation="horizontal"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_over_pup_items"
                         tools:listitem="@layout/popular_item" />
@@ -157,12 +158,12 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/recycler_view"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:scrollbars="none" />
                     </RelativeLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </RelativeLayout>
-        </androidx.core.widget.NestedScrollView>
+        </ScrollView>
 
     </FrameLayout>
 

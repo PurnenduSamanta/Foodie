@@ -11,7 +11,7 @@ import retrofit2.Response
 
 class CategoryMealsViewModel : ViewModel() {
 
-    val mealsLiveData = MutableLiveData<List<MealsByCategoryList.Meal>>()
+    private val mealsLiveData = MutableLiveData<List<MealsByCategoryList.Meal>>()
 
 
     fun getMealsByCategoryName(name: String) {
@@ -25,18 +25,13 @@ class CategoryMealsViewModel : ViewModel() {
                     response.body()?.let {
                         mealsLiveData.postValue(it.meals)
                     }
-
-
                 }
 
                 override fun onFailure(call: Call<MealsByCategoryList>, t: Throwable) {
 
                 }
             })
-
-
     }
-
 
     fun observeMealsLiveData() : LiveData<List<MealsByCategoryList.Meal>>
     {

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.purnendu.ResponseHandle
 import com.example.purnendu.pojo.MealList
 import com.example.purnendu.retrofit.RetrofitInstance
 import com.example.purnendu.room.MealDatabase
@@ -16,21 +17,22 @@ import retrofit2.Response
 
 class MealsViewModel(private val database: MealDatabase) : ViewModel() {
 
-    private var mealLiveData: MutableLiveData<MealList.Meal> = MutableLiveData()
+    private var mealLiveData: MutableLiveData<ResponseHandle<MealList.Meal>> = MutableLiveData()
 
     fun getMealDetail(id: String) {
+        mealLiveData.postValue(ResponseHandle.Loading())
         RetrofitInstance.foodApi.getMealById(id).enqueue(object : Callback<MealList> {
             override fun onResponse(call: Call<MealList>, response: Response<MealList>) {
                 if (response.body() != null) {
-                    mealLiveData.value = response.body()!!.meals[0]
+                    if (response.isSuccessful)
+                        mealLiveData.postValue(ResponseHandle.Success(response.body()?.meals?.get(0)))
                 } else
                     return
             }
 
             override fun onFailure(call: Call<MealList>, t: Throwable) {
-
+                mealLiveData.postValue(ResponseHandle.Error(t.message.toString()))
             }
-
 
         })
     }
@@ -42,7 +44,7 @@ class MealsViewModel(private val database: MealDatabase) : ViewModel() {
         }
     }
 
-    fun observeMealLiveData(): LiveData<MealList.Meal> {
+    fun observeMealLiveData(): LiveData<ResponseHandle<MealList.Meal>> {
         return mealLiveData
     }
 

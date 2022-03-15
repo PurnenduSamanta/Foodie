@@ -1,4 +1,4 @@
-package com.example.easyfood.data.pojo
+package com.example.purnendu.pojo
 
 data class Category(
     val idCategory: String,

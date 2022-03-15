@@ -6,13 +6,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.purnendu.NetworkUtility
 import com.example.purnendu.R
+import com.example.purnendu.ResponseHandle
 import com.example.purnendu.activity.CategoryMealsActivity
 import com.example.purnendu.activity.MealActivity
 import com.example.purnendu.adapter.CategoriesRecyclerAdapter
@@ -25,27 +27,25 @@ import com.example.purnendu.viewModel.HomeViewModel
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
-    private lateinit var viewModel:HomeViewModel
-    private lateinit var popularMealsAdapter:MostPopularAdapter
-    private lateinit var categoryMealsAdapter:CategoriesRecyclerAdapter
-    private lateinit var temp:MealList.Meal
+    private lateinit var viewModel: HomeViewModel
+    private lateinit var popularMealsAdapter: MostPopularAdapter
+    private lateinit var categoryMealsAdapter: CategoriesRecyclerAdapter
+    private lateinit var temp: MealList.Meal
 
 
-    companion object{
-        const val MEAL_ID="com.example.purnendu.fragment_id"
-        const val MEAL_NAME="com.example.purnendu.fragment_name"
-        const val MEAL_THUMB="com.example.purnendu.fragment_thumb"
-        const val CATEGORY_NAME="com.example.purnendu.fragment_categoryName"
-
+    companion object {
+        const val MEAL_ID = "com.example.purnendu.fragment_id"
+        const val MEAL_NAME = "com.example.purnendu.fragment_name"
+        const val MEAL_THUMB = "com.example.purnendu.fragment_thumb"
+        const val CATEGORY_NAME = "com.example.purnendu.fragment_categoryName"
     }
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel=ViewModelProvider(this).get(HomeViewModel::class.java)
-        popularMealsAdapter=MostPopularAdapter()
-        categoryMealsAdapter= CategoriesRecyclerAdapter()
+        viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
+        popularMealsAdapter = MostPopularAdapter(requireContext())
+        categoryMealsAdapter = CategoriesRecyclerAdapter(requireContext())
     }
 
 
@@ -54,86 +54,120 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
-        // Inflate the layout for this fragment
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        showLoadingCase()
-        createMostPopularMealsRecyclerView()
-        createCategoryMealsRecyclerView()
+        settingRecyclerView()
+
         viewModel.getRandomMeal()
-        viewModel.observeRandomMealLiveData().observe(viewLifecycleOwner, Observer {
-            this.temp=it
-            Glide.with(this@HomeFragment)
-                .load(it.strMealThumb)
-                .into(binding.imgRandomMeal)
-        })
+        viewModel.observeRandomMealLiveData().observe(viewLifecycleOwner) {
+            when (it) {
+                is ResponseHandle.Loading -> {
+                    showLoadingCase()
+                }
+                is ResponseHandle.Success -> {
+                    cancelLoadingCase()
+                    this.temp = it.data!!
+                    Glide.with(this@HomeFragment)
+                        .load(it.data.strMealThumb)
+                        .into(binding.imgRandomMeal)
+                }
+                is ResponseHandle.Error -> {
+                    cancelLoadingCase()
+                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         viewModel.getPopularMeals()
         viewModel.observerPopularMealsLiveData().observe(viewLifecycleOwner) {
 
-            popularMealsAdapter.setAdapter(it.meals)
-            binding.recViewMealsPopular.adapter = popularMealsAdapter
-            popularMealsAdapter.notifyDataSetChanged()
-
+            when (it) {
+                is ResponseHandle.Loading -> {
+                    showLoadingCase()
+                }
+                is ResponseHandle.Success -> {
+                    cancelLoadingCase()
+                    it.data?.let { it1 -> popularMealsAdapter.setAdapter(it1.meals) }
+                }
+                is ResponseHandle.Error -> {
+                    cancelLoadingCase()
+                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         viewModel.getCategories()
-        viewModel.observerCategoriesMealsLiveData().observe(viewLifecycleOwner, Observer {
+        viewModel.observerCategoriesMealsLiveData().observe(viewLifecycleOwner) {
 
-           categoryMealsAdapter.setCategoryList(it)
-            binding.recyclerView.adapter = categoryMealsAdapter
-            cancelLoadingCase()
+            when (it) {
+                is ResponseHandle.Loading -> {
+                    showLoadingCase()
+                }
+                is ResponseHandle.Success -> {
+                    it.data?.let { it1 ->
+                        categoryMealsAdapter.setCategoryList(it1)
+                        cancelLoadingCase()
+                    }
+                }
+                is ResponseHandle.Error -> {
+                    cancelLoadingCase()
+                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                }
+            }
 
-        })
+
+        }
 
 
         binding.imgRandomMeal.setOnClickListener {
-            val intent= Intent(context,MealActivity::class.java)
-            intent.putExtra(MEAL_NAME,temp.strMeal)
-            intent.putExtra(MEAL_ID,temp.idMeal)
-            intent.putExtra(MEAL_THUMB,temp.strMealThumb)
-            startActivity(intent)
-        }
-
-
-       popularMealsAdapter.onItemClick={
-           val intent= Intent(context,MealActivity::class.java)
-           intent.putExtra(MEAL_NAME,it.strMeal)
-           intent.putExtra(MEAL_ID,it.idMeal)
-           intent.putExtra(MEAL_THUMB,it.strMealThumb)
-           startActivity(intent)
-       }
-
-        categoryMealsAdapter.onItemClick={
-            val intent= Intent(context, CategoryMealsActivity::class.java)
-            intent.putExtra(CATEGORY_NAME,it.strCategory)
-            startActivity(intent)
-        }
-
-
-    }
-
-    private fun createMostPopularMealsRecyclerView() {
-        binding.recViewMealsPopular.apply {
-            layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
-        }
-    }
-
-        private fun createCategoryMealsRecyclerView() {
-            binding.recyclerView.apply {
-                layoutManager=GridLayoutManager(requireContext(),3)
+            if(!NetworkUtility.checkConnection(requireContext()))
+            {
+                Toast.makeText(context,"No connection", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+            val intent = Intent(context, MealActivity::class.java)
+            intent.putExtra(MEAL_NAME, temp.strMeal)
+            intent.putExtra(MEAL_ID, temp.idMeal)
+            intent.putExtra(MEAL_THUMB, temp.strMealThumb)
+            startActivity(intent)
+        }
+
+
+        popularMealsAdapter.onItemClick = {
+            val intent = Intent(context, MealActivity::class.java)
+            intent.putExtra(MEAL_NAME, it.strMeal)
+            intent.putExtra(MEAL_ID, it.idMeal)
+            intent.putExtra(MEAL_THUMB, it.strMealThumb)
+            startActivity(intent)
+        }
+
+        categoryMealsAdapter.onItemClick = {
+            val intent = Intent(context, CategoryMealsActivity::class.java)
+            intent.putExtra(CATEGORY_NAME, it.strCategory)
+            startActivity(intent)
+        }
+
+
+    }
+
+    private fun settingRecyclerView() {
+        binding.apply {
+            recViewMealsPopular.adapter = popularMealsAdapter
+            recViewMealsPopular.layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+            recyclerView.adapter = categoryMealsAdapter
+            recyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
+        }
+
     }
 
 
     private fun showLoadingCase() {
         binding.apply {
             header.visibility = View.INVISIBLE
-
             tvWouldLikeToEat.visibility = View.INVISIBLE
             randomMeal.visibility = View.INVISIBLE
             tvOverPupItems.visibility = View.INVISIBLE

@@ -14,12 +14,11 @@ interface MealDao {
 
 
     @Query("SELECT * FROM `Favorite Meal`")
-     fun getFavouriteFood(): LiveData<List<MealModel>>
-
+    fun getFavouriteFood(): LiveData<List<MealModel>>
 
     @Query("DELETE FROM `Favorite Meal` where mealId=:mealId")
-    suspend fun delete(mealId:String)
+    suspend fun delete(mealId: String)
 
     @Query("select count(mealId) from `favorite meal` where mealId= :mealId")
-    suspend fun isFavourite(mealId:String):Long
+    suspend fun isFavourite(mealId: String): Long
 }

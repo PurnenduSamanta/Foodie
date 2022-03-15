@@ -5,14 +5,11 @@ import androidx.lifecycle.ViewModel
 import com.example.purnendu.room.MealDatabase
 import com.example.purnendu.room.MealModel
 
-class FavouriteViewModel(private val database:MealDatabase) : ViewModel() {
+class FavouriteViewModel(private val database: MealDatabase) : ViewModel() {
 
 
-     val mutableFavouriteMealsLiveData: LiveData<List<MealModel>>
-            get()=database.MealDao().getFavouriteFood()
-
-
-
+    val mutableFavouriteMealsLiveData: LiveData<List<MealModel>>
+        get() = database.MealDao().getFavouriteFood()
 
 
 }

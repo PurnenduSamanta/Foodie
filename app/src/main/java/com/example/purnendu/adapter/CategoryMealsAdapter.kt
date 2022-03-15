@@ -1,15 +1,16 @@
 package com.example.purnendu.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.purnendu.NetworkUtility
 import com.example.purnendu.databinding.CategoryItemBinding
 import com.example.purnendu.pojo.MealsByCategoryList
-import com.example.purnendu.room.MealModel
 
-class CategoryMealsAdapter : RecyclerView.Adapter<CategoryMealsAdapter.MealViewHolder>() {
+class CategoryMealsAdapter(private val context: Context) : RecyclerView.Adapter<CategoryMealsAdapter.MealViewHolder>() {
 
     private var mealList: List<MealsByCategoryList.Meal> = ArrayList()
     lateinit var setOnMealClickListener: ((MealsByCategoryList.Meal)->Unit)
@@ -18,10 +19,6 @@ class CategoryMealsAdapter : RecyclerView.Adapter<CategoryMealsAdapter.MealViewH
         this.mealList = mealList
         notifyDataSetChanged()
     }
-
-//    fun setOnMealClickListener(setOnMealClickListener: SetOnMealClickListener) {
-//        this.setOnMealClickListener = setOnMealClickListener
-//    }
 
     class MealViewHolder(val binding: CategoryItemBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -33,12 +30,13 @@ class CategoryMealsAdapter : RecyclerView.Adapter<CategoryMealsAdapter.MealViewH
         holder.binding.apply {
             imgCategory.scaleType= ImageView.ScaleType.CENTER_CROP
             tvCategoryName.text = mealList[position].strMeal
-            Glide.with(holder.itemView)
+            Glide.with(context)
                 .load(mealList[position].strMealThumb)
                 .into(imgCategory)
         }
 
         holder.itemView.setOnClickListener {
+            if(NetworkUtility.checkConnection(context))
           setOnMealClickListener.invoke(mealList[position])
         }
     }
@@ -47,7 +45,3 @@ class CategoryMealsAdapter : RecyclerView.Adapter<CategoryMealsAdapter.MealViewH
         return mealList.size
     }
 }
-
-//interface SetOnMealClickListener {
-//    fun setOnClickListener(meal: MealsByCategoryList.Meal)
-//}

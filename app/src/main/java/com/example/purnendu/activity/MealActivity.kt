@@ -1,16 +1,19 @@
 package com.example.purnendu.activity
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.purnendu.R
+import com.example.purnendu.ResponseHandle
 import com.example.purnendu.databinding.ActivityMealBinding
 import com.example.purnendu.fragment.HomeFragment
 import com.example.purnendu.room.MealDatabase
@@ -27,6 +30,7 @@ class MealActivity : AppCompatActivity() {
     private lateinit var mealName: String
     private lateinit var mealThumb: String
     private lateinit var youTubeLink: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_meal)
@@ -39,28 +43,31 @@ class MealActivity : AppCompatActivity() {
         setUpViewWithMealInformation()
 
 
-        loadingCase()
         mealViewModel.getMealDetail(mealId)
-
         observeMealLiveData()
 
 
         binding.imgYoutube.setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(youTubeLink))
+                startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(
+                    this@MealActivity,
+                    "No Application found to perform ",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
 
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(youTubeLink))
-            startActivity(intent)
         }
 
 
         binding.btnSave.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
-                if(checkAlreadyFavourite())
-                {
+                if (checkAlreadyFavourite()) {
                     mealViewModel.deleteFavouriteMeal(mealId)
                     binding.btnSave.setImageResource(R.drawable.ic_baseline_save_24)
-                }
-                else
-                {
+                } else {
                     mealViewModel.insertMealToFavourite(mealId, mealName, mealThumb)
                     binding.btnSave.setImageResource(R.drawable.ic_baseline_done_24)
                 }
@@ -69,11 +76,10 @@ class MealActivity : AppCompatActivity() {
 
         }
 
-     lifecycleScope.launch(Dispatchers.IO) {
-         if(checkAlreadyFavourite())
-             binding.btnSave.setImageResource(R.drawable.ic_baseline_done_24)
-     }
-
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (checkAlreadyFavourite())
+                binding.btnSave.setImageResource(R.drawable.ic_baseline_done_24)
+        }
 
 
     }
@@ -81,12 +87,22 @@ class MealActivity : AppCompatActivity() {
     private fun observeMealLiveData() {
         mealViewModel.observeMealLiveData().observe(this) {
 
-            onResponseCase()
-            binding.tvCategoryInfo.text = "Category: ${it.strCategory}"
-            binding.tvAreaInfo.text = "Area: ${it.strArea}"
-          //  binding.tvInstructions.text = "-Instructions:\n ${it.strInstructions}"
-            binding.tvContent.text=it.strInstructions
-            youTubeLink = it.strYoutube
+            when (it) {
+                is ResponseHandle.Loading -> {
+                    loadingCase()
+                }
+                is ResponseHandle.Success -> {
+                    onResponseCase()
+                    binding.tvCategoryInfo.text = "Category: ${it.data?.strCategory}"
+                    binding.tvAreaInfo.text = "Area: ${it.data?.strArea}"
+                    binding.tvContent.text = it.data?.strInstructions
+                    youTubeLink = it.data?.strYoutube.toString()
+
+                }
+                is ResponseHandle.Error -> {
+                    Toast.makeText(this@MealActivity, it.message, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -105,7 +121,6 @@ class MealActivity : AppCompatActivity() {
 
     private fun getMealInfoFromIntent() {
         val tempIntent = intent
-
         this.mealId = tempIntent.getStringExtra(HomeFragment.MEAL_ID)!!
         this.mealName = tempIntent.getStringExtra(HomeFragment.MEAL_NAME)!!
         this.mealThumb = tempIntent.getStringExtra(HomeFragment.MEAL_THUMB)!!
@@ -130,11 +145,10 @@ class MealActivity : AppCompatActivity() {
 
     }
 
-    private suspend fun checkAlreadyFavourite():Boolean
-    {
-        var isAlreadyAdded:Boolean=false
-        lifecycleScope.launch (Dispatchers.IO){
-          isAlreadyAdded=mealViewModel.isFavouriteMeal(mealId)
+    private suspend fun checkAlreadyFavourite(): Boolean {
+        var isAlreadyAdded = false
+        lifecycleScope.launch(Dispatchers.IO) {
+            isAlreadyAdded = mealViewModel.isFavouriteMeal(mealId)
         }.join()
         return isAlreadyAdded
     }
