@@ -1,14 +1,16 @@
 package com.example.purnendu.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.purnendu.NetworkUtility
 import com.example.purnendu.databinding.CategoryItemBinding
 import com.example.purnendu.room.MealModel
 
-class FavouriteMealRecyclerAdapter :
+class FavouriteMealRecyclerAdapter(private val context: Context) :
     RecyclerView.Adapter<FavouriteMealRecyclerAdapter.MyViewHolder>() {
 
     private var mealList: List<MealModel> = ArrayList()
@@ -43,6 +45,7 @@ class FavouriteMealRecyclerAdapter :
                 .into(imgCategory)
 
             holder.itemView.setOnClickListener {
+                if(NetworkUtility.checkConnection(context))
                 onItemSelected.invoke(mealList[position])
             }
         }

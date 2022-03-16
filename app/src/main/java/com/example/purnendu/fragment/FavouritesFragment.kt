@@ -25,7 +25,7 @@ class FavouritesFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        adapter = FavouriteMealRecyclerAdapter()
+        adapter = FavouriteMealRecyclerAdapter(requireContext())
 
         database = context?.let { MealDatabase.getDataBase(it) }!!
 
