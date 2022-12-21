@@ -2,8 +2,6 @@
 
 This project has been made using Navigation Component,Retrofit,Room,ViewModel,Coroutine,LiveData.
 
-Tutorial link: [here](https://www.youtube.com/playlist?list=PLj76U7gxVixTYE8n2X_z50nP3O8TqyBb3)
-
 #Have a look 
 
 
